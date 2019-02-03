@@ -3,13 +3,13 @@ Design and implement a RESTful API (including data model and the backing impleme
 for money transfers between accounts.
 
 ## Techstack
-Sparkjava
-Gson
-Slf4j
-Junit
-Mockito
-AssertJ
-Rest-Assured
+- Sparkjava
+- Gson
+- Slf4j
+- Junit
+- Mockito
+- AssertJ
+- Rest-Assured
 
 ## Usage
 ./mvnw exec:java
