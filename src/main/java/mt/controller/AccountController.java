@@ -2,7 +2,6 @@ package mt.controller;
 
 
 import com.google.gson.Gson;
-import com.google.gson.JsonParseException;
 import mt.model.Account;
 import mt.model.AccountCreationRequest;
 import mt.service.AccountService;
@@ -43,7 +42,13 @@ public class AccountController {
         );
 
         post("/accounts",
-                (req, res) -> accountService.create(gson.fromJson(req.body(), AccountCreationRequest.class)),
+                (req, res) -> {
+                    final Account account = accountService.create(gson.fromJson(req.body(), AccountCreationRequest.class));
+                    if (account != null) {
+                        res.status(201);
+                    }
+                    return account;
+                },
                 gson::toJson
         );
 

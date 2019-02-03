@@ -52,7 +52,7 @@ public class TransactionService {
         if (!from.equals(to)) {
             transaction = transfer(from, to, transactionRequest.getAmount(), transactionRequest.getCurrency());
         } else {
-            transaction = Transaction.invalid(from, to);
+            transaction = Transaction.invalid(from, to, transactionRequest.getCurrency(), transactionRequest.getAmount());
         }
 
         transactionDao.save(transaction);
@@ -71,13 +71,13 @@ public class TransactionService {
             final BigDecimal amountInFromCurrency = convertTo(accFrom.getCurrency(), currency, amount);
 
             if (fromAmount.compareTo(amountInFromCurrency) < 0) {
-                return Transaction.invalid(from, to);
+                return Transaction.invalid(from, to, currency, amount);
             }
             final BigDecimal amountInToCurrency = convertTo(currency, accTo.getCurrency(), amount);
 
             accountDao.save(accFrom.createWithNewAmount(fromAmount.subtract(amountInFromCurrency)));
             accountDao.save(accTo.createWithNewAmount(toAmount.add(amountInToCurrency)));
-            return Transaction.valid(from, to);
+            return Transaction.valid(from, to, currency, amount);
         } finally {
             releaseLocks(from, to);
         }

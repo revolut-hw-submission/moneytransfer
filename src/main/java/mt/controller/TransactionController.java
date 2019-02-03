@@ -1,6 +1,7 @@
 package mt.controller;
 
 import com.google.gson.Gson;
+import mt.model.Transaction;
 import mt.model.TransactionRequest;
 import mt.service.TransactionService;
 import static spark.Spark.*;
@@ -8,14 +9,14 @@ import static spark.Spark.*;
 public class TransactionController {
 
     public TransactionController(TransactionService transactionService, Gson gson) {
-
-        exception(IllegalArgumentException.class, (e, req, res) -> {
-            res.status(400);
-            res.body(gson.toJson(e));
-        });
-
         get("/transactions",
-                (req, res) -> transactionService.getAll(),
+                (req, res) -> {
+                    final String accountId = req.queryParams("accountId");
+                    if (accountId != null && !accountId.isEmpty()) {
+                        return transactionService.getForAccountId(accountId);
+                    }
+                    return transactionService.getAll();
+                },
                 gson::toJson
         );
 
@@ -25,7 +26,15 @@ public class TransactionController {
         );
 
         post("/transactions",
-                (req, res) -> transactionService.create(gson.fromJson(req.body(), TransactionRequest.class)),
+                (req, res) -> {
+                    final Transaction transaction = transactionService.create(gson.fromJson(req.body(), TransactionRequest.class));
+                    if (transaction.getResult().equals(Transaction.Result.INVALID)) {
+                        res.status(400);
+                    } else {
+                        res.status(201);
+                    }
+                    return transaction;
+                },
                 gson::toJson
         );
     }

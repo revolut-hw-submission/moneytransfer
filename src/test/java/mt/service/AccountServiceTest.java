@@ -25,7 +25,7 @@ class AccountServiceTest {
         final AccountService accountService = new AccountService(accountDaoMock, mock(AccountLockProvider.class));
 
 
-        final Account account = accountService.create(new AccountCreationRequest(EUR, 10.1f));
+        final Account account = accountService.create(new AccountCreationRequest(EUR, new BigDecimal(10.1f)));
         verify(accountDaoMock, times(1)).save(account);
 
         assertThat(account.getId()).isNotBlank();

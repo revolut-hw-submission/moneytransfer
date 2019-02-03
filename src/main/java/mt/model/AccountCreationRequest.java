@@ -1,11 +1,17 @@
 package mt.model;
 
+import java.math.BigDecimal;
+
 public class AccountCreationRequest {
 
     private final Currency currency;
-    private final float amount;
+    private final BigDecimal amount;
 
-    public AccountCreationRequest(Currency currency, float amount) {
+    public AccountCreationRequest(Currency currency, BigDecimal amount) {
+
+        if(currency == null || amount == null) {
+            throw new IllegalArgumentException();
+        }
         this.currency = currency;
         this.amount = amount;
     }
@@ -14,7 +20,7 @@ public class AccountCreationRequest {
         return currency;
     }
 
-    public float getAmount() {
+    public BigDecimal getAmount() {
         return amount;
     }
 }

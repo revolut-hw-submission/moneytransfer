@@ -10,6 +10,9 @@ public class Account {
     private final BigDecimal amount;
 
     public Account(String id, Currency currency, BigDecimal amount) {
+        if (id == null || currency == null || amount == null) {
+            throw new IllegalArgumentException();
+        }
         this.id = id;
         this.currency = currency;
         this.amount = amount;

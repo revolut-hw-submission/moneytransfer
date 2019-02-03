@@ -110,16 +110,16 @@ class TransactionServiceTest {
 
     @Test
     void transactionServicePassthroughsFindCallsToDao() {
-        final Transaction valid = Transaction.valid("1", "2");
+        final Transaction valid = Transaction.valid("1", "2", EUR, BigDecimal.ONE);
         when(transactionDaoMock.findById(eq("1"))).thenReturn(valid);
         assertThat(transactionService.get("1")).isEqualTo(valid);
     }
 
     @Test
     void transactionServicePassthroughsFindAllCallsToDao() {
-        final Transaction valid = Transaction.valid("1", "2");
-        final Transaction valid2 = Transaction.valid("1", "2");
-        final Transaction invalid = Transaction.invalid("1", "2");
+        final Transaction valid = Transaction.valid("1", "2", EUR, BigDecimal.ONE);
+        final Transaction valid2 = Transaction.valid("1", "2", EUR, BigDecimal.ONE);
+        final Transaction invalid = Transaction.invalid("1", "2", EUR, BigDecimal.ONE);
         when(transactionDaoMock.findAllOrdered())
                 .thenReturn(asList(valid, valid2, invalid));
         assertThat(transactionService.getAll())
@@ -129,9 +129,9 @@ class TransactionServiceTest {
 
     @Test
     void getByAccountIdFiltersBothAccountInvolved() {
-        final Transaction valid = Transaction.valid("1", "2");
-        final Transaction valid2 = Transaction.valid("3", "4");
-        final Transaction invalid = Transaction.invalid("3", "1");
+        final Transaction valid = Transaction.valid("1", "2", EUR, BigDecimal.ONE);
+        final Transaction valid2 = Transaction.valid("3", "4", EUR, BigDecimal.ONE);
+        final Transaction invalid = Transaction.invalid("3", "1", EUR, BigDecimal.ONE);
 
         when(transactionDaoMock.findAllOrdered())
                 .thenReturn(asList(valid, valid2, invalid));

@@ -4,7 +4,6 @@ import mt.dao.AccountDao;
 import mt.model.Account;
 import mt.model.AccountCreationRequest;
 
-import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.UUID;
 import java.util.concurrent.locks.Lock;
@@ -24,11 +23,17 @@ public class AccountService {
     }
 
     public Account get(String id) {
+        if (id == null) {
+            return null;
+        }
         return accountDao.findById(id);
     }
 
     //TODO: Return response which shows that acc cannot be deleted.
     public Account delete(String id) {
+        if (id == null) {
+            return null;
+        }
         final Lock lockByAccountId = accountLockProvider.getLockByAccountId(id);
         lockByAccountId.lock();
         try {
@@ -42,7 +47,7 @@ public class AccountService {
         final Account account = new Account(
                 UUID.randomUUID().toString(),
                 creationRequest.getCurrency(),
-                new BigDecimal(creationRequest.getAmount())
+                creationRequest.getAmount()
         );
         accountDao.save(account);
         return account;
