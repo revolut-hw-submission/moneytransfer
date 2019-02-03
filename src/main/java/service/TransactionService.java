@@ -8,6 +8,7 @@ import model.TransactionRequest;
 
 import java.math.BigDecimal;
 import java.util.Collection;
+import java.util.stream.Collectors;
 
 public class TransactionService {
 
@@ -28,6 +29,14 @@ public class TransactionService {
         return transactionDao.findAllOrdered();
     }
 
+
+    public Collection<Transaction> getForAccountId(String accountId) {
+        return transactionDao.findAllOrdered()
+                .stream()
+                .filter(tr -> tr.getFrom().equals(accountId) || tr.getTo().equals(accountId))
+                .collect(Collectors.toList());
+    }
+
     public Transaction get(String id) {
         return transactionDao.findById(id);
     }
@@ -39,14 +48,12 @@ public class TransactionService {
         if (!from.equals(to)) {
             transaction = transfer(from, to, transactionRequest.getAmount());
         } else {
-            transaction = Transaction.invalid();
+            transaction = Transaction.invalid(from, to);
         }
 
         transactionDao.save(transaction);
         return transaction;
     }
-
-
 
     private Transaction transfer(String from, String to, BigDecimal amount) {
         acquireLockOrdered(from, to);
@@ -57,13 +64,13 @@ public class TransactionService {
             final BigDecimal fromAmount = accFrom.getAmount();
             final BigDecimal toAmount = accTo.getAmount();
             if (fromAmount.compareTo(amount) < 0) {
-                return Transaction.invalid();
+                return Transaction.invalid(from, to);
             }
             accountDao.save(accFrom.createWithNewAmount(fromAmount.subtract(amount)));
             accountDao.save(accTo.createWithNewAmount(toAmount.add(amount)));
-            return Transaction.valid();
+            return Transaction.valid(from, to);
         } finally {
-            releaseLockOrdered(from, to);
+            releaseLocks(from, to);
         }
     }
 
@@ -76,15 +83,8 @@ public class TransactionService {
         lockProvider.getLockByAccountId(second).lock();
     }
 
-    private void releaseLockOrdered(String first, String second) {
-        if (first.compareTo(second) < 0) {
-            releaseLockOrdered(second, first);
-            return;
-        }
+    private void releaseLocks(String first, String second) {
         lockProvider.getLockByAccountId(first).unlock();
         lockProvider.getLockByAccountId(second).unlock();
     }
-
-
-
 }

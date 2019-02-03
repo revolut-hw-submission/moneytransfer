@@ -17,9 +17,9 @@ class DefaultTransactionDaoTest {
 
     @Test
     void defaultDaoSavesData() {
-        dao.save(Transaction.valid());
-        dao.save(Transaction.valid());
-        dao.save(Transaction.invalid());
+        dao.save(Transaction.valid("1", "2"));
+        dao.save(Transaction.valid("1", "2"));
+        dao.save(Transaction.invalid("1", "2"));
 
         assertThat(dao.findAllOrdered()).hasSize(3);
 
@@ -31,7 +31,7 @@ class DefaultTransactionDaoTest {
 
     @Test
     void defaultReturnsDataById() {
-        final Transaction valid = Transaction.valid();
+        final Transaction valid = Transaction.valid("1", "2");
         dao.save(valid);
 
         assertThat(dao.findById(valid.getId())).extracting(Transaction::getResult).isEqualTo(Transaction.Result.VALID);
