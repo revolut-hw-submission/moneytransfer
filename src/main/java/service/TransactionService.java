@@ -7,7 +7,7 @@ import model.Transaction;
 import model.TransactionRequest;
 
 import java.math.BigDecimal;
-import java.util.List;
+import java.util.Collection;
 
 public class TransactionService {
 
@@ -24,8 +24,8 @@ public class TransactionService {
         this.lockProvider = lockProvider;
     }
 
-    public List<Transaction> getAll() {
-        return transactionDao.findAll();
+    public Collection<Transaction> getAll() {
+        return transactionDao.findAllOrdered();
     }
 
     public Transaction get(String id) {

@@ -2,10 +2,10 @@ package dao;
 
 import model.Transaction;
 
-import java.util.List;
+import java.util.Collection;
 
 public interface TransactionDao {
-    List<Transaction> findAll();
+    Collection<Transaction> findAllOrdered();
 
     Transaction findById(String id);
 

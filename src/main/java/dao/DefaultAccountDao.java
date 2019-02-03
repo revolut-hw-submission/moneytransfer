@@ -3,6 +3,7 @@ package dao;
 import model.Account;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -12,7 +13,7 @@ public class DefaultAccountDao implements AccountDao {
 
     @Override
     public Collection<Account> findAll() {
-        return accounts.values();
+        return Collections.unmodifiableCollection(accounts.values());
     }
 
     @Override

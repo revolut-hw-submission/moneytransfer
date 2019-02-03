@@ -11,7 +11,6 @@ class AccountLockProvider {
 
     Lock getLockByAccountId(String accountId) {
         return lockMap.computeIfAbsent(accountId, k -> new ReentrantLock());
-
     }
 
 }
