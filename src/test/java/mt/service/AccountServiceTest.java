@@ -1,9 +1,8 @@
-package service;
+package mt.service;
 
-import dao.AccountDao;
-import model.Account;
-import model.AccountCreationRequest;
-import model.Currency;
+import mt.dao.AccountDao;
+import mt.model.Account;
+import mt.model.AccountCreationRequest;
 import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 
@@ -13,7 +12,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.locks.Lock;
 
-import static model.Currency.EUR;
+import static mt.model.Currency.EUR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 

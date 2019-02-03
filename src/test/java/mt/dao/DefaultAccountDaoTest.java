@@ -1,13 +1,13 @@
-package dao;
+package mt.dao;
 
-import model.Account;
+import mt.model.Account;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.util.Collection;
 
-import static model.Currency.GPB;
+import static mt.model.Currency.GPB;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class DefaultAccountDaoTest {

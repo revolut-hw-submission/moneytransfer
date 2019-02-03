@@ -1,8 +1,8 @@
-package service;
+package mt.service;
 
-import dao.AccountDao;
-import model.Account;
-import model.AccountCreationRequest;
+import mt.dao.AccountDao;
+import mt.model.Account;
+import mt.model.AccountCreationRequest;
 
 import java.math.BigDecimal;
 import java.util.Collection;

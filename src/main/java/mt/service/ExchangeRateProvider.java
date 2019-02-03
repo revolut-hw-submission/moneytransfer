@@ -1,6 +1,6 @@
-package service;
+package mt.service;
 
-import model.Currency;
+import mt.model.Currency;
 
 import java.math.BigDecimal;
 

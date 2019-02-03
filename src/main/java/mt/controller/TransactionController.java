@@ -1,8 +1,8 @@
-package controller;
+package mt.controller;
 
 import com.google.gson.Gson;
-import model.TransactionRequest;
-import service.TransactionService;
+import mt.model.TransactionRequest;
+import mt.service.TransactionService;
 import static spark.Spark.*;
 
 public class TransactionController {

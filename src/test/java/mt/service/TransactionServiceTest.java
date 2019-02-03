@@ -1,10 +1,10 @@
-package service;
+package mt.service;
 
-import dao.AccountDao;
-import dao.TransactionDao;
-import model.Account;
-import model.Transaction;
-import model.TransactionRequest;
+import mt.dao.AccountDao;
+import mt.dao.TransactionDao;
+import mt.model.Account;
+import mt.model.Transaction;
+import mt.model.TransactionRequest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,8 +16,8 @@ import java.util.List;
 import java.util.concurrent.locks.Lock;
 
 import static java.util.Arrays.asList;
-import static model.Currency.EUR;
-import static model.Currency.USD;
+import static mt.model.Currency.EUR;
+import static mt.model.Currency.USD;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;

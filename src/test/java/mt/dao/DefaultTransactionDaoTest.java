@@ -1,6 +1,6 @@
-package dao;
+package mt.dao;
 
-import model.Transaction;
+import mt.model.Transaction;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

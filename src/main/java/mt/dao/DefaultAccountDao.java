@@ -1,6 +1,6 @@
-package dao;
+package mt.dao;
 
-import model.Account;
+import mt.model.Account;
 
 import java.util.Collection;
 import java.util.Collections;

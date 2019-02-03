@@ -1,4 +1,4 @@
-package model;
+package mt.model;
 
 import java.util.UUID;
 
