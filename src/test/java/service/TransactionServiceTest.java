@@ -8,14 +8,16 @@ import model.TransactionRequest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 
 import java.math.BigDecimal;
-import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.locks.Lock;
 
 import static java.util.Arrays.asList;
 import static model.Currency.EUR;
+import static model.Currency.USD;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
@@ -27,15 +29,16 @@ class TransactionServiceTest {
     private AccountDao accountDaoMock = mock(AccountDao.class);
     private TransactionDao transactionDaoMock = mock(TransactionDao.class);
     private AccountLockProvider accountLockProviderMock = mock(AccountLockProvider.class);
+    private ExchangeRateProvider exchangeRateProviderMock = mock(ExchangeRateProvider.class);
 
     @BeforeEach
     void setUp() {
-        transactionService = new TransactionService(accountDaoMock, transactionDaoMock, accountLockProviderMock);
+        transactionService = new TransactionService(accountDaoMock, transactionDaoMock, accountLockProviderMock, exchangeRateProviderMock);
     }
 
     @AfterEach
     void tearDown() {
-        reset(accountDaoMock, transactionDaoMock, accountLockProviderMock);
+        reset(accountDaoMock, transactionDaoMock, accountLockProviderMock, exchangeRateProviderMock);
     }
 
     @Test
@@ -44,6 +47,7 @@ class TransactionServiceTest {
         final Lock lock2 = mock(Lock.class);
         when(accountLockProviderMock.getLockByAccountId(eq("1"))).thenReturn(lock1);
         when(accountLockProviderMock.getLockByAccountId(eq("2"))).thenReturn(lock2);
+        when(exchangeRateProviderMock.getExchangeRate(any(), any())).thenReturn(BigDecimal.ONE);
 
         final Account acc1 = new Account("1", EUR, new BigDecimal(1.2f));
         final Account acc2 = new Account("2", EUR, new BigDecimal(1.2f));
@@ -64,6 +68,7 @@ class TransactionServiceTest {
     @Test
     void invalidTransactionIsReturnedWhenNotEnoughBalance() {
         when(accountLockProviderMock.getLockByAccountId(any())).thenReturn(mock(Lock.class));
+        when(exchangeRateProviderMock.getExchangeRate(any(), any())).thenReturn(BigDecimal.ONE);
 
         final Account acc1 = new Account("1", EUR, new BigDecimal(0.9f));
         final Account acc2 = new Account("2", EUR, new BigDecimal(1.2f));
@@ -79,7 +84,7 @@ class TransactionServiceTest {
     @Test
     void validTransactionResultIsSaved() {
         when(accountLockProviderMock.getLockByAccountId(any())).thenReturn(mock(Lock.class));
-
+        when(exchangeRateProviderMock.getExchangeRate(any(), any())).thenReturn(BigDecimal.ONE);
         final Account acc1 = new Account("1", EUR, new BigDecimal(1.9f));
         final Account acc2 = new Account("2", EUR, new BigDecimal(1.2f));
         when(accountDaoMock.findById(eq("1"))).thenReturn(acc1);
@@ -133,4 +138,34 @@ class TransactionServiceTest {
         assertThat(transactionService.getForAccountId("1"))
                 .containsExactly(valid, invalid);
     }
+
+
+    @Test
+    void transferHappenWithRespectOfConversionRate() {
+        when(accountLockProviderMock.getLockByAccountId(any())).thenReturn(mock(Lock.class));
+
+        when(exchangeRateProviderMock.getExchangeRate(eq(USD), eq(EUR))).thenReturn(new BigDecimal(2f));
+        when(exchangeRateProviderMock.getExchangeRate(eq(EUR), eq(USD))).thenReturn(new BigDecimal(0.5f));
+        when(exchangeRateProviderMock.getExchangeRate(eq(EUR), eq(EUR))).thenReturn(BigDecimal.ONE);
+
+        final Account acc1 = new Account("1", EUR, new BigDecimal(3f));
+        final Account acc2 = new Account("2", USD, new BigDecimal(4f));
+        when(accountDaoMock.findById(eq("1"))).thenReturn(acc1);
+        when(accountDaoMock.findById(eq("2"))).thenReturn(acc2);
+
+        final Transaction transaction = transactionService.create(new TransactionRequest("1", "2", EUR, new BigDecimal(1f)));
+
+
+        final ArgumentCaptor<Account> accountArgumentCaptor = ArgumentCaptor.forClass(Account.class);
+        verify(accountDaoMock, times(2)).save(accountArgumentCaptor.capture());
+
+        final List<Account> captured = accountArgumentCaptor.getAllValues();
+        assertThat(captured).hasSize(2);
+        assertThat(captured).containsExactly(acc1.createWithNewAmount(new BigDecimal(2f)),
+                acc2.createWithNewAmount(new BigDecimal(6f)));
+
+        assertThat(transaction.getResult()).isEqualTo(Transaction.Result.VALID);
+        verify(transactionDaoMock, times(1)).save(eq(transaction));
+    }
+
 }

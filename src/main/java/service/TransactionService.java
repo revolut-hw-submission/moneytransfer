@@ -3,6 +3,7 @@ package service;
 import dao.AccountDao;
 import dao.TransactionDao;
 import model.Account;
+import model.Currency;
 import model.Transaction;
 import model.TransactionRequest;
 
@@ -15,14 +16,17 @@ public class TransactionService {
     private final AccountDao accountDao;
     private final TransactionDao transactionDao;
     private final AccountLockProvider lockProvider;
+    private final ExchangeRateProvider exchangeRateProvider;
 
 
     public TransactionService(AccountDao accountDao,
                               TransactionDao transactionDao,
-                              AccountLockProvider lockProvider) {
+                              AccountLockProvider lockProvider,
+                              ExchangeRateProvider exchangeRateProvider) {
         this.accountDao = accountDao;
         this.transactionDao = transactionDao;
         this.lockProvider = lockProvider;
+        this.exchangeRateProvider = exchangeRateProvider;
     }
 
     public Collection<Transaction> getAll() {
@@ -46,7 +50,7 @@ public class TransactionService {
         final String from = transactionRequest.getFrom();
         final String to = transactionRequest.getTo();
         if (!from.equals(to)) {
-            transaction = transfer(from, to, transactionRequest.getAmount());
+            transaction = transfer(from, to, transactionRequest.getAmount(), transactionRequest.getCurrency());
         } else {
             transaction = Transaction.invalid(from, to);
         }
@@ -55,7 +59,7 @@ public class TransactionService {
         return transaction;
     }
 
-    private Transaction transfer(String from, String to, BigDecimal amount) {
+    private Transaction transfer(String from, String to, BigDecimal amount, Currency currency) {
         acquireLockOrdered(from, to);
         try {
             final Account accFrom = accountDao.findById(from);
@@ -63,16 +67,27 @@ public class TransactionService {
 
             final BigDecimal fromAmount = accFrom.getAmount();
             final BigDecimal toAmount = accTo.getAmount();
-            if (fromAmount.compareTo(amount) < 0) {
+
+            final BigDecimal amountInFromCurrency = convertTo(accFrom.getCurrency(), currency, amount);
+
+            if (fromAmount.compareTo(amountInFromCurrency) < 0) {
                 return Transaction.invalid(from, to);
             }
-            accountDao.save(accFrom.createWithNewAmount(fromAmount.subtract(amount)));
-            accountDao.save(accTo.createWithNewAmount(toAmount.add(amount)));
+            final BigDecimal amountInToCurrency = convertTo(currency, accTo.getCurrency(), amount);
+
+            accountDao.save(accFrom.createWithNewAmount(fromAmount.subtract(amountInFromCurrency)));
+            accountDao.save(accTo.createWithNewAmount(toAmount.add(amountInToCurrency)));
             return Transaction.valid(from, to);
         } finally {
             releaseLocks(from, to);
         }
     }
+
+    private BigDecimal convertTo(Currency from, Currency to, BigDecimal amount) {
+        final BigDecimal rate = exchangeRateProvider.getExchangeRate(from, to);
+        return amount.multiply(rate);
+    }
+
 
     private void acquireLockOrdered(String first, String second) {
         if (first.compareTo(second) < 0) {
