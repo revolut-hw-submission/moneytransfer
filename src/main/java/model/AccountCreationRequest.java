@@ -2,13 +2,19 @@ package model;
 
 public class AccountCreationRequest {
 
-    final String userId;
-    final Currency currency;
-    final float amount;
+    private final Currency currency;
+    private final float amount;
 
-    public AccountCreationRequest(String userId, Currency currency, float amount) {
-        this.userId = userId;
+    public AccountCreationRequest(Currency currency, float amount) {
         this.currency = currency;
         this.amount = amount;
+    }
+
+    public Currency getCurrency() {
+        return currency;
+    }
+
+    public float getAmount() {
+        return amount;
     }
 }
